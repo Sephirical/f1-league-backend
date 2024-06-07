@@ -1,10 +1,9 @@
 import express, { Request, Response } from 'express';
-import AWS from 'aws-sdk';
+import { dynamoDb, kms } from './config/aws';
 
 const router = express.Router();
-const dynamoDb = new AWS.DynamoDB.DocumentClient({ region: 'ap-southeast-2' });
 
-const tableName = 'Participants';
+const tableName = 'Participant';
 
 interface AWSError extends Error {
   code?: string;

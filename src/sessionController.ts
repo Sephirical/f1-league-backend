@@ -1,10 +1,16 @@
 import express, { Request, Response } from 'express';
 import AWS from 'aws-sdk';
+import 'dotenv/config';
 
 const router = express.Router();
-const dynamoDb = new AWS.DynamoDB.DocumentClient({ region: 'ap-southeast-2' });
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: 'ap-southeast-2' // Specify your AWS region
+});
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-const tableName = 'Sessions';
+const tableName = 'Session';
 
 interface AWSError extends Error {
   code?: string;
