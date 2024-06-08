@@ -4,12 +4,12 @@ import { createUser, login } from './handler';
 
 const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
   try {
     const userToken = await login(username, password);
     if (!userToken) return res.status(401).json({ error: 'Invalid credentials!' });
-    return res.json(userToken);
+    return res.json({ token: userToken });
   } catch (err) {
     console.log(err);
   }
