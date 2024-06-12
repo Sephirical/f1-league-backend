@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import AWS from 'aws-sdk';
 import 'dotenv/config';
+import { authenticateToken } from './middleware/middleware';
+import { getUserAuth } from './types/express';
 
 const router = express.Router();
 AWS.config.update({
@@ -21,9 +23,16 @@ interface AWSError extends Error {
   retryDelay?: number;
 }
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authenticateToken, async (req: getUserAuth, res: Response) => {
   const params = {
-    TableName: tableName
+    TableName: tableName,
+    FilterExpression: "#user = :user",
+    ExpressionAttributeNames: {
+      "#user": "user"
+    },
+    ExpressionAttributeValues: {
+      ":user": req.user?.userId
+    }
   };
 
   try {
@@ -35,13 +44,13 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authenticateToken, async (req: getUserAuth, res: Response) => {
   const { id } = req.params;
   const { name } = req.body;
 
   const params = {
     TableName: tableName,
-    Key: { id },
+    Key: { sessionId: id, user: req.user.userId },
     UpdateExpression: 'set #name = :name',
     ExpressionAttributeNames: { '#name': 'name' },
     ExpressionAttributeValues: { ':name': name },
@@ -57,12 +66,12 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authenticateToken, async (req: getUserAuth, res: Response) => {
   const { id } = req.params;
 
   const params = {
     TableName: tableName,
-    Key: { id }
+    Key: { sessionId: id, user: req.user.userId },
   };
 
   try {
