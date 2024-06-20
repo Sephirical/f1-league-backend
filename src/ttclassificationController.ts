@@ -38,6 +38,34 @@ router.get('/', authenticateToken, async (req: getUserAuth, res: Response) => {
   }
 });
 
+router.post('/', authenticateToken, async (req: getUserAuth, res: Response) => {
+  const { name, trackID } = req.body;
+
+  if (!name || !trackID) {
+    return res.status(400).json({ error: 'Name and trackID are required' });
+  }
+
+  // const formattedTrackID = trackID.toString().padStart(2, '0');
+
+  const newClassification = {
+    className: name,
+    track: trackID,
+  };
+
+  const params = {
+    TableName: 'TTClassificationName', // Replace with your DynamoDB table name
+    Item: newClassification,
+  };
+
+  try {
+    await dynamoDb.put(params).promise();
+    res.status(201).json(newClassification);
+  } catch (error) {
+    console.error('Error creating TT Classification:', error);
+    res.status(500).json({ error: 'Could not create TT Classification' });
+  }
+})
+
 // router.get('/leaderboard', authenticateToken, async (req: getUserAuth, res: Response) => {
 //   const { name, racenetToken } = req.body;
 //   let racenetUrl = `https://web-api.racenet.com/api/F124Stats/leaderboard/03?platform=3&pageNumber=1&mode=00&weather=D&pageSize=20&playerFocus=false&type=0&version=1&isCrossPlay=false`
@@ -76,25 +104,7 @@ router.get('/', authenticateToken, async (req: getUserAuth, res: Response) => {
 
 router.post('/', authenticateToken, async (req: getUserAuth, res: Response) => {
   const { name, trackId } = req.body;
-  fetch("https://web-api.racenet.com/api/identity/auth", {
-    "headers": {
-      "accept": "application/json, text/plain, */*",
-      "accept-language": "en-GB,en;q=0.9",
-      "content-type": "application/json",
-      "priority": "u=1, i",
-      "sec-ch-ua": "\"Google Chrome\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"",
-      "sec-ch-ua-mobile": "?0",
-      "sec-ch-ua-platform": "\"Windows\"",
-      "sec-fetch-dest": "empty",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-site",
-      "cookie": "TAsessionID=2a524758-43b7-4c6f-bffd-7a7026021bfe|NEW; _gid=GA1.2.1650814896.1718454335; _gat_UA-29812607-2=1; notice_behavior=implied,us; notice_location=au; _ga=GA1.2.345832612.1718454335; _ga_VEGXVNQ9M9=GS1.1.1718454334.1.1.1718454390.0.0.0",
-      "Referer": "https://racenet.com/",
-      "Referrer-Policy": "strict-origin-when-cross-origin"
-    },
-    "body": "{\"authCode\":\"QUOhAA4uZocl4mS8j00f5T0y0gFaB_egjAPGFqa4\",\"clientId\":\"RACENET_1_JS_WEB_APP\",\"grantType\":\"authorization_code\",\"codeVerifier\":\"\",\"redirectUri\":\"https://racenet.com/oauthCallback\",\"refreshToken\":\"\"}",
-    "method": "POST"
-  });
+  
 })
 
 router.delete('/:id', authenticateToken, async (req: getUserAuth, res: Response) => {
